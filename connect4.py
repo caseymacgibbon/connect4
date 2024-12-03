@@ -9,7 +9,10 @@ class Board():
         self.turn = 0
         self.game_over = False
         
-    def __str__(self): # makes board print nicely
+    def __str__(self): 
+        """
+        makes board print nicely
+        """
         p = "1 2 3 4 5 6 7"
         for col in range(np.shape(self.board)[1]):
             p += "\n"
@@ -18,13 +21,19 @@ class Board():
                 p += " "
         return p
     
-    def move(self, row): # adds a piece at the specified column
+    def move(self, row):
+        """
+        adds a piece at the specified column
+        """
         col = np.max(np.where(self.board[row - 1] == "."))
         self.board[row - 1, col] = self.players[self.turn % 2]
         self.turn += 1
         self.game_over = self.checkWinner(row - 1, col) != None and self.checkFull()
 
-    def checkWinner(self, row, col): # checks if the most recent move makes a sequence of 4
+    def checkWinner(self, row, col): 
+        """
+        checks if the most recent move makes a sequence of 4
+        """
         char = self.board[row, col]
         # check vertical
         count = 0
@@ -77,6 +86,9 @@ class Board():
         return None
     
     def getAvailableMoves(self):
+        """
+        gets the available moves and returns a string array of avail columns
+        """
         avail_moves = []
         for col in range(7):
             # Check if there's room in the column
@@ -85,9 +97,13 @@ class Board():
         return avail_moves
         
     def checkFull(self):
+        """
+        Checks if the board is full
+        """
         if self.getAvailableMoves() is None:
             return False
         return False
+    
 def main():
     board = Board()
     # figure out who is going first (X always goes first)
