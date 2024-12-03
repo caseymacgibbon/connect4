@@ -83,8 +83,6 @@ class Board():
             if "." in self.board[col]:
                 avail_moves.append(col)  
         return avail_moves
-
-
         
 
 def main():
@@ -100,7 +98,6 @@ def main():
     # play the game
     print(board)
     while not board.game_over:
-        print(board.getAvailableMoves())
         if turn % 2 == 0: # computer's turn
             avail_moves = board.getAvailableMoves()
             move = random.choice(avail_moves)
@@ -108,9 +105,10 @@ def main():
             board.move(move+1)
             turn += 1
         elif turn % 2 == 1: # player's turn
-            move = None
-            while move not in ["1", "2", "3", "4", "5", "6", "7"]:
-                move = input("Enter a number 1-7: ")
+            move = 9 # move not ever valid 
+            while int(move) not in board.getAvailableMoves():
+                move = input("Enter a valid move: ")
+                print(board.getAvailableMoves())
             board.move(int(move))
             turn += 1
         print(board)
