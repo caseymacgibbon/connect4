@@ -1,4 +1,6 @@
 import numpy as np
+import random
+
 
 class Board():
     def __init__(self):
@@ -73,13 +75,24 @@ class Board():
         if count >= 4:
             return char
         return None
+    
+    def getAvailableMoves(self):
+        avail_moves = []
+        for col in range(7):
+            # Check if there's room in the column
+            if "." in self.board[col]:
+                avail_moves.append(col)  
+        return avail_moves
+
+
+        
 
 def main():
     board = Board()
     # figure out who is going first (X always goes first)
     comp = None
     while comp not in ["X", "O"]:
-        comp = input("Is the computer X or O?")
+        comp = input("Is the computer X or O? ")
     if comp == "X":
         turn = 0
     elif comp == "O":
@@ -87,10 +100,12 @@ def main():
     # play the game
     print(board)
     while not board.game_over:
+        print(board.getAvailableMoves())
         if turn % 2 == 0: # computer's turn
-            move = np.random.randint(1, 7)
+            avail_moves = board.getAvailableMoves()
+            move = random.choice(avail_moves)
             print("Computer's move: " + str(move))
-            board.move(move)
+            board.move(move+1)
             turn += 1
         elif turn % 2 == 1: # player's turn
             move = None
