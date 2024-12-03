@@ -22,7 +22,7 @@ class Board():
         col = np.max(np.where(self.board[row - 1] == "."))
         self.board[row - 1, col] = self.players[self.turn % 2]
         self.turn += 1
-        self.game_over = self.checkWinner(row - 1, col) != None
+        self.game_over = self.checkWinner(row - 1, col) != None and self.checkFull()
 
     def checkWinner(self, row, col): # checks if the most recent move makes a sequence of 4
         char = self.board[row, col]
@@ -81,10 +81,13 @@ class Board():
         for col in range(7):
             # Check if there's room in the column
             if "." in self.board[col]:
-                avail_moves.append(col)  
+                avail_moves.append(str(col+1))  
         return avail_moves
         
-
+    def checkFull(self):
+        if self.getAvailableMoves() is None:
+            return False
+        return False
 def main():
     board = Board()
     # figure out who is going first (X always goes first)
@@ -100,15 +103,16 @@ def main():
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
             avail_moves = board.getAvailableMoves()
+            print(avail_moves)
             move = random.choice(avail_moves)
             print("Computer's move: " + str(move))
-            board.move(move+1)
+            board.move(int(move))
             turn += 1
         elif turn % 2 == 1: # player's turn
-            move = 9 # move not ever valid 
-            while int(move) not in board.getAvailableMoves():
-                move = input("Enter a valid move: ")
+            move = None # move not ever valid X
+            while move not in board.getAvailableMoves(): # makes a list of strings instead of int
                 print(board.getAvailableMoves())
+                move = input("Enter a valid move: ")
             board.move(int(move))
             turn += 1
         print(board)
