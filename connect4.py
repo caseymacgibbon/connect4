@@ -142,12 +142,10 @@ def maxMove(board, depth, prevScore):
     for move in legalMoves:
         # find the score of this move
         moveScore = scoreMove(board, move) * (depth + 1)/10
-        # print(moveScore)
         # simulate doing the move
         board.move(move)
         # call the min function to find opponent's best move
         score = minMove(board, depth-1, moveScore)[1] + prevScore
-        print(score)
         # undoes change
         board.undo()
         # compare scores of all possible next moves
@@ -195,7 +193,7 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            move, score = maxMove(board, 0, 0)
+            move, score = maxMove(board, 2, 0)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
