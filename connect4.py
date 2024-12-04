@@ -73,7 +73,7 @@ class Board():
         """
         Checks if the board is full
         """
-        if self.getAvailableMoves() is None:
+        if len(self.getAvailableMoves()) ==0:
             return True
         return False
     
