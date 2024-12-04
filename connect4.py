@@ -8,6 +8,7 @@ class Board():
         self.players = ["X", "O"]
         self.turn = 0
         self.game_over = False
+        self.moves = []
         
     def __str__(self): 
         """
@@ -28,7 +29,15 @@ class Board():
         col = np.max(np.where(self.board[row - 1] == "."))
         self.board[row - 1, col] = self.players[self.turn % 2]
         self.turn += 1
-        self.game_over = self.checkWinner(row - 1, col) != None and self.checkFull()
+        self.game_over = self.checkWinner(row - 1, col) != None or self.checkFull()
+        self.moves.append(row - 1)
+
+    def undo(self):
+        row = self.moves[-1]
+        col = np.min(np.where(self.board[row] != "."))
+        self.board[row, col] = "."
+        self.moves.pop(-1)
+        self.turn -= 1
 
     def checkWinner(self, row, col): 
         """
@@ -93,7 +102,7 @@ class Board():
         for col in range(7):
             # Check if there's room in the column
             if "." in self.board[col]:
-                avail_moves.append(str(col+1))  
+                avail_moves.append(col+1)
         return avail_moves
         
     def checkFull(self):
@@ -103,6 +112,74 @@ class Board():
         if self.getAvailableMoves() is None:
             return False
         return False
+    
+def scoreMove(board, move):
+    row = move - 1
+    col = np.max(np.where(board.board[row] == "."))
+    count = 0
+    for i in range(1,4):
+        if col + i < 6 and board.board[row, col + i] == board.players[board.turn % 2]:
+            count += 1
+        if col - i >= 0 and board.board[row, col - i] == board.players[board.turn % 2]:
+            count += 1
+        if row + i < 7 and board.board[row + i, col] == board.players[board.turn % 2]:
+            count += 1
+        if row - i >= 0 and board.board[row - i, col] == board.players[board.turn % 2]:
+            count += 1
+    return count
+
+def maxMove(board, depth, prevScore):
+    # base case
+    if depth < 0 or board.game_over:
+        return None, prevScore
+    # else
+    # set low best score
+    bestScore = float("-inf")
+    bestMove = None
+    # shuffle all possible moves so it doesn't always do the same thing
+    legalMoves = list(board.getAvailableMoves())
+    random.shuffle(legalMoves)
+    for move in legalMoves:
+        # find the score of this move
+        moveScore = scoreMove(board, move) * (depth + 1)/10
+        # print(moveScore)
+        # simulate doing the move
+        board.move(move)
+        # call the min function to find opponent's best move
+        score = minMove(board, depth-1, moveScore)[1] + prevScore
+        print(score)
+        # undoes change
+        board.undo()
+        # compare scores of all possible next moves
+        if score > bestScore:
+            bestScore = score
+            bestMove = move
+    return bestMove, bestScore
+
+def minMove(board, depth, prevScore):
+   # base case
+    if depth < 0 or board.game_over:
+        return None, prevScore
+    # else
+    bestScore = float("inf")
+    bestMove = None
+    # shuffle all possible moves so it doesn't always do the same thing
+    legalMoves = list(board.getAvailableMoves())
+    random.shuffle(legalMoves)
+    for move in legalMoves:
+        # find the score of this move and negate for the opponent
+        moveScore = - scoreMove(board, move) * (depth + 1)/10
+        # simulate doing the move
+        board.move(move)
+        # call the max function to find computers's best move
+        score = maxMove(board, depth-1, moveScore)[1] + prevScore
+        # undoes change
+        board.undo()
+        # compare scores of all possible next moves
+        if score < bestScore:
+            bestScore = score
+            bestMove = move
+    return bestMove, bestScore
     
 def main():
     board = Board()
@@ -118,18 +195,18 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            avail_moves = board.getAvailableMoves()
-            print(avail_moves)
-            move = random.choice(avail_moves)
+            move, score = maxMove(board, 0, 0)
+            print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
             turn += 1
         elif turn % 2 == 1: # player's turn
             move = None # move not ever valid X
             while move not in board.getAvailableMoves(): # makes a list of strings instead of int
-                print(board.getAvailableMoves())
                 move = input("Enter a valid move: ")
-            board.move(int(move))
+                if move.isnumeric():
+                    move = int(move)
+            board.move(move)
             turn += 1
         print(board)
     if turn % 2 == 0:
