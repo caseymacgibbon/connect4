@@ -41,57 +41,21 @@ class Board():
 
     def checkWinner(self, row, col): 
         """
-        checks if the most recent move makes a sequence of 4
+        Checks if the most recent move makes a sequence of 4 in any direction.
         """
-        char = self.board[row, col]
-        # check vertical
-        count = 0
-        shift = 0
-        while col + shift < 6 and self.board[row, col + shift] == char:
-            count += 1
-            shift += 1
-        shift = 1
-        while col - shift >= 0 and self.board[row, col - shift] == char:
-            count += 1
-            shift +=1
-        if count >= 4:
-            return char
-        # check horizontal
-        count = 0
-        shift = 0
-        while row + shift < 7 and self.board[row + shift, col] == char:
-            count += 1
-            shift += 1
-        shift = 1
-        while row - shift >= 0 and self.board[row - shift, col] == char:
-            count += 1
-            shift +=1
-        if count >= 4:
-            return char
-        # check positive diagonal
-        count = 0
-        shift = 0
-        while row + shift < 7 and col + shift < 6 and self.board[row + shift, col + shift] == char:
-            count += 1
-            shift += 1
-        shift = 1
-        while row - shift >= 0 and col - shift >= 0 and self.board[row - shift, col - shift] == char:
-            count += 1
-            shift +=1
-        if count >= 4:
-            return char
-        # check negative diagonal
-        count = 0
-        shift = 0
-        while row + shift < 7 and col - shift >= 0 and self.board[row + shift, col - shift] == char:
-            count += 1
-            shift += 1
-        shift = 1
-        while row - shift >= 0 and col + shift < 6 and self.board[row - shift, col + shift] == char:
-            count += 1
-            shift +=1
-        if count >= 4:
-            return char
+        directions = [
+            (1, 0),  # vertical
+            (0, 1),  # horizontal
+            (1, 1),  # diagonal +
+            (1, -1)  # diagonal -
+        ]
+
+        for dr, dc in directions:
+            # for every direction, count forwards and backwards
+            # dr and dc are pos for first and neg for second
+            # take out -1 because row, col counted twice
+            if self.countDirection(row, col, dr, dc, self.board[row, col]) + self.countDirection(row, col, -dr, -dc, self.board[row, col]) - 1 >= 4:
+                return self.board[row, col]
         return None
     
     def getAvailableMoves(self):
@@ -110,13 +74,26 @@ class Board():
         Checks if the board is full
         """
         if self.getAvailableMoves() is None:
-            return False
+            return True
         return False
+    
+    def countDirection(self, row, col, delta_row, delta_col, player):
+        """
+        Count the number of consecutive pieces in a given direction.
+        """
+        count = 0
+        r, c = row, col
+        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] == player:
+            count += 1
+            r += delta_row
+            c += delta_col
+        return count
     
 def scoreMove(board, move):
     row = move - 1
     col = np.max(np.where(board.board[row] == "."))
     count = 0
+    # counts how many tokens in each row
     for i in range(1,4):
         if col + i < 6 and board.board[row, col + i] == board.players[board.turn % 2]:
             count += 1
@@ -128,6 +105,32 @@ def scoreMove(board, move):
             count += 1
     return count
 
+def score_Move(board, move):
+    row = move - 1
+    col = np.max(np.where(board.board[row] == "."))
+    count = 0
+    player = board.players[board.turn % 2]
+    opponent = board.players[(board.turn + 1) % 2]
+    directions = [
+            (1, 0),  # vertical
+            (0, 1),  # horizontal
+            (1, 1),  # diagonal +
+            (1, -1)  # diagonal -
+        ]
+    for dr, dc in directions:
+        # count number of player pieces forwards and backwards in the direction
+        player_count = board.countDirection(row, col, dr, dc, player) + board.countDirection(row, col, -dr, -dc, player) - 1
+        # count number of opponent pieces forwards and backwards in the direction
+        opponent_count = board.countDirection(row, col, dr, dc, opponent) + board.countDirection(row, col, -dr, -dc, opponent) - 1
+        # multiply score by 10 (want a lot of consecutive pieces)
+        score = player_count * 10
+        # subtract opponents blocking
+        score = score - opponent_count
+        count+= score
+
+    return count
+
+    
 def maxMove(board, depth, prevScore):
     # base case
     if depth < 0 or board.game_over:
@@ -141,7 +144,7 @@ def maxMove(board, depth, prevScore):
     random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move
-        moveScore = scoreMove(board, move) * (depth + 1)/10
+        moveScore = score_Move(board, move) * (depth + 1)/10
         # simulate doing the move
         board.move(move)
         # call the min function to find opponent's best move
@@ -166,7 +169,7 @@ def minMove(board, depth, prevScore):
     random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent
-        moveScore = - scoreMove(board, move) * (depth + 1)/10
+        moveScore = - score_Move(board, move) * (depth + 1)/10
         # simulate doing the move
         board.move(move)
         # call the max function to find computers's best move
