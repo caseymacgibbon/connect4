@@ -89,6 +89,23 @@ class Board():
             c += delta_col
         return count
     
+    def scoreDirection(self, row, col, delta_row, delta_col, player, opponent):
+        """
+        Returns the score of a move depending on whether or not there is an open space
+        """
+        score = 0
+        r, c = row, col
+        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent:
+            if self.board[r, c] == player:
+                score += 1
+            elif self.board[r, c] == ".":  
+                score +=.5
+            r += delta_row
+            c += delta_col
+        if score ==4:
+            return 10000
+        return score
+    
 def scoreMove(board, move):
     row = move - 1
     col = np.max(np.where(board.board[row] == "."))
@@ -108,7 +125,6 @@ def scoreMove(board, move):
 def score_Move(board, move):
     row = move - 1
     col = np.max(np.where(board.board[row] == "."))
-    count = 0
     player = board.players[board.turn % 2]
     opponent = board.players[(board.turn + 1) % 2]
     directions = [
@@ -119,16 +135,16 @@ def score_Move(board, move):
         ]
     for dr, dc in directions:
         # count number of player pieces forwards and backwards in the direction
-        player_count = board.countDirection(row, col, dr, dc, player) + board.countDirection(row, col, -dr, -dc, player) - 1
+        player_count = board.scoreDirection(row, col, dr, dc, player, opponent) + board.scoreDirection(row, col, -dr, -dc, player, opponent) - 1
         # count number of opponent pieces forwards and backwards in the direction
-        opponent_count = board.countDirection(row, col, dr, dc, opponent) + board.countDirection(row, col, -dr, -dc, opponent) - 1
+        #opponent_count = board.countDirection(row, col, dr, dc, opponent) + board.countDirection(row, col, -dr, -dc, opponent) - 1
         # multiply score by 10 (want a lot of consecutive pieces)
         score = player_count * 10
         # subtract opponents blocking
-        score = score - opponent_count
-        count+= score
+        #score = score - opponent_count
+        #count+= score
 
-    return count
+    return score
 
     
 def maxMove(board, depth, prevScore):
@@ -196,7 +212,7 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            move, score = maxMove(board, 2, 0)
+            move, score = maxMove(board, 3, 0)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
