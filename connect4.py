@@ -95,15 +95,26 @@ class Board():
         """
         score = 0
         r, c = row, col
+        # forwards
+        r += delta_row
+        c += delta_col
         while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent:
             if self.board[r, c] == player:
                 score += 1
-            elif self.board[r, c] == ".":  
-                score +=.5
             r += delta_row
             c += delta_col
-        if score ==4:
-            return 10000
+        
+        r, c = row, col
+        r -= delta_row
+        c -= delta_col
+        # backwards
+        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent:
+            if self.board[r, c] == player:
+                score += 1
+            r -= delta_row
+            c -= delta_col
+        if score >= 3:
+            score = 1000
         return score
     
 def scoreMove(board, move):
@@ -129,20 +140,15 @@ def score_Move(board, move):
     opponent = board.players[(board.turn + 1) % 2]
     directions = [
             (1, 0),  # vertical
-            (0, 1),  # horizontal
+            (0, 1), # horizontal
             (1, 1),  # diagonal +
             (1, -1)  # diagonal -
         ]
+    score =0
     for dr, dc in directions:
         # count number of player pieces forwards and backwards in the direction
-        player_count = board.scoreDirection(row, col, dr, dc, player, opponent) + board.scoreDirection(row, col, -dr, -dc, player, opponent) - 1
-        # count number of opponent pieces forwards and backwards in the direction
-        #opponent_count = board.countDirection(row, col, dr, dc, opponent) + board.countDirection(row, col, -dr, -dc, opponent) - 1
-        # multiply score by 10 (want a lot of consecutive pieces)
-        score = player_count * 10
-        # subtract opponents blocking
-        #score = score - opponent_count
-        #count+= score
+        player_count = board.scoreDirection(row, col, dr, dc, player, opponent)
+        score += player_count
 
     return score
 
@@ -161,7 +167,7 @@ def maxMove(board, depth, prevScore):
     scores = []
     for move in legalMoves:
         # find the score of this move
-        moveScore = scoreMove(board, move) * (depth + 1)/10
+        moveScore = score_Move(board, move) 
         # simulate doing the move
         board.move(move)
         # call the min function to find opponent's best move
@@ -178,9 +184,9 @@ def maxMove(board, depth, prevScore):
 def minMove(board, depth, prevScore):
    # base case
     if depth < 0 or board.game_over:
+        print("HI")
         return None, prevScore
     # else
-    print("here")
     bestScore = float("inf")
     bestMove = None
     # shuffle all possible moves so it doesn't always do the same thing
@@ -188,7 +194,8 @@ def minMove(board, depth, prevScore):
     # random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent
-        moveScore = - scoreMove(board, move) * (depth + 1)/10
+        moveScore = -score_Move(board, move)
+        print(moveScore)
         # simulate doing the move
         board.move(move)
         # call the max function to find computers's best move
@@ -215,7 +222,7 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            move, score, scores = maxMove(board, 2, 0)
+            move, score, scores = maxMove(board, 1, 0)
             print(scores)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
