@@ -157,10 +157,11 @@ def maxMove(board, depth, prevScore):
     bestMove = None
     # shuffle all possible moves so it doesn't always do the same thing
     legalMoves = list(board.getAvailableMoves())
-    random.shuffle(legalMoves)
+    # random.shuffle(legalMoves)
+    scores = []
     for move in legalMoves:
         # find the score of this move
-        moveScore = score_Move(board, move) * (depth + 1)/10
+        moveScore = scoreMove(board, move) * (depth + 1)/10
         # simulate doing the move
         board.move(move)
         # call the min function to find opponent's best move
@@ -168,24 +169,26 @@ def maxMove(board, depth, prevScore):
         # undoes change
         board.undo()
         # compare scores of all possible next moves
+        scores.append(score)
         if score > bestScore:
             bestScore = score
             bestMove = move
-    return bestMove, bestScore
+    return bestMove, bestScore, scores
 
 def minMove(board, depth, prevScore):
    # base case
     if depth < 0 or board.game_over:
         return None, prevScore
     # else
+    print("here")
     bestScore = float("inf")
     bestMove = None
     # shuffle all possible moves so it doesn't always do the same thing
     legalMoves = list(board.getAvailableMoves())
-    random.shuffle(legalMoves)
+    # random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent
-        moveScore = - score_Move(board, move) * (depth + 1)/10
+        moveScore = - scoreMove(board, move) * (depth + 1)/10
         # simulate doing the move
         board.move(move)
         # call the max function to find computers's best move
@@ -212,7 +215,8 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            move, score = maxMove(board, 3, 0)
+            move, score, scores = maxMove(board, 2, 0)
+            print(scores)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
