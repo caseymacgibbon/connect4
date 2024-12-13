@@ -6,6 +6,9 @@ class Board():
     board framework for playing Connect 4
     '''
     def __init__(self):
+        '''
+        initialize a 6x7 board
+        '''
         self.board = np.full((7,6), ".") # size of board and symbol for empty space
         self.players = ["X", "O"] # symbols used on the board
         self.turn = 0 # even/odd determines whose turn it is
@@ -104,7 +107,7 @@ class Board():
         r += delta_row
         c += delta_col
         counter = 0
-        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent and abs(row - r) < 4 and abs(row - r) < 4:
+        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent and abs(row - r) < 4 and abs(row - r) < 4: # while in bounds, not opponent's token, and within 3 spaces
             if self.board[r, c] == player:
                 score += 1 + counter / 10 # increase for more in the same direction, ie. getting 3 in a row is better than getting 2 in a row twice
             r += delta_row
@@ -114,7 +117,7 @@ class Board():
         r, c = row, col
         r -= delta_row
         c -= delta_col
-        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent and abs(row - r) < 4 and abs(row - r) < 4:
+        while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent and abs(row - r) < 4 and abs(row - r) < 4: # while in bounds, not opponent's token, and within 3 spaces
             if self.board[r, c] == player:
                 score += 1 + counter / 10 # increase for more in the same direction
             r -= delta_row
@@ -126,7 +129,7 @@ class Board():
 
     def scoreMove(self, move):
         """
-            Returns the score of a move depending on where other tokens/empty space are
+        Returns the score of a move depending on where other tokens/empty space are
         """
         row = move - 1
         col = np.max(np.where(self.board[row] == "."))
@@ -147,6 +150,9 @@ class Board():
 
     
 def maxMove(board, depth, prevScore):
+    '''
+    scores every available move on the board at this time and calls minMove to check what opponent would do
+    '''
     # base case
     if depth < 0 or board.game_over:
         return None, prevScore
@@ -173,6 +179,9 @@ def maxMove(board, depth, prevScore):
     return bestMove, bestScore
 
 def minMove(board, depth, prevScore):
+    '''
+    scores every available move on the board at this time and calls maxMove to check what opponent would do
+    '''
    # base case
     if depth < 0 or board.game_over:
         return None, prevScore
@@ -184,7 +193,7 @@ def minMove(board, depth, prevScore):
     random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent, multiply by depth to add urgency
-        moveScore = - board.scoreMove(move) * depth / 10
+        moveScore = - board.scoreMove(move) * depth / 10 * 2 # make opponent lean more defensive
         # simulate doing the move
         board.move(move)
         # call the max function to find computers's best move
@@ -198,6 +207,9 @@ def minMove(board, depth, prevScore):
     return bestMove, bestScore
     
 def main():
+    '''
+    Sets up and runs a game of Connect4 against a bot
+    '''
     board = Board()
     # figure out who is going first (X always goes first)
     comp = None
@@ -211,9 +223,9 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            depth = 5
+            depth = 5 # increase depth for better (but slower) performance by the bot
             move, score = maxMove(board, depth - 1, 0)
-            print("Best score: " + str(score))
+            # print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
             turn += 1
