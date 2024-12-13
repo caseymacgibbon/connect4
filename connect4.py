@@ -167,7 +167,7 @@ def maxMove(board, depth, prevScore):
     bestMove = None
     # shuffle all possible moves so it doesn't always do the same thing
     legalMoves = list(board.getAvailableMoves())
-    # random.shuffle(legalMoves)
+    random.shuffle(legalMoves)
     scores = []
     for move in legalMoves:
         # find the score of this move
@@ -197,7 +197,7 @@ def minMove(board, depth, prevScore):
     random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent
-        moveScore = -score_Move(board, move)
+        moveScore = -score_Move(board, move) *2
         print(moveScore)
         # simulate doing the move
         board.move(move)
@@ -225,7 +225,7 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            move, score, scores = maxMove(board, 0, 0)
+            move, score, scores = maxMove(board, 3, 0)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
