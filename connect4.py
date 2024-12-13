@@ -98,11 +98,13 @@ class Board():
         # forwards
         r += delta_row
         c += delta_col
+        counter = 0
         while 0 <= r < 7 and 0 <= c < 6 and self.board[r, c] != opponent:
             if self.board[r, c] == player:
                 score += 1
             r += delta_row
             c += delta_col
+            counter += 1
         
         r, c = row, col
         r -= delta_row
@@ -113,8 +115,10 @@ class Board():
                 score += 1
             r -= delta_row
             c -= delta_col
+            counter += 1
         if score >= 3:
             score = 1000
+        print("counter", counter)
         return score
     
 def scoreMove(board, move):
@@ -184,14 +188,13 @@ def maxMove(board, depth, prevScore):
 def minMove(board, depth, prevScore):
    # base case
     if depth < 0 or board.game_over:
-        print("HI")
         return None, prevScore
     # else
     bestScore = float("inf")
     bestMove = None
     # shuffle all possible moves so it doesn't always do the same thing
     legalMoves = list(board.getAvailableMoves())
-    # random.shuffle(legalMoves)
+    random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent
         moveScore = -score_Move(board, move)
@@ -222,8 +225,7 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            move, score, scores = maxMove(board, 1, 0)
-            print(scores)
+            move, score, scores = maxMove(board, 0, 0)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
             board.move(int(move))
