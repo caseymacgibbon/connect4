@@ -211,7 +211,7 @@ def main():
     print(board)
     while not board.game_over:
         if turn % 2 == 0: # computer's turn
-            depth = 1
+            depth = 5
             move, score = maxMove(board, depth - 1, 0)
             print("Best score: " + str(score))
             print("Computer's move: " + str(move))
